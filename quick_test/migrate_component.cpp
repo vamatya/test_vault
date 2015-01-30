@@ -65,19 +65,22 @@ struct test_client
 ///////////////////////////////////////////////////////////////////////////////
 bool test_migrate_component(hpx::id_type source, hpx::id_type target)
 {
+    hpx::id_type u1, u2;
     // create component on given locality
     test_client t1 = test_client::create(source);
     HPX_TEST_NEQ(hpx::naming::invalid_id, t1.get_gid());
 
     // the new object should live on the source locality
     HPX_TEST_EQ(t1.call(), source);
-
+    u1 = t1.get_gid();
     try {
         // migrate of t1 to the target
+        
+
         test_client t2(hpx::components::migrate<test_server>(
             t1.get_gid(), target));
         HPX_TEST_NEQ(hpx::naming::invalid_id, t2.get_gid());
-
+        u2 = t2.get_gid();
         // the migrated object should have the same id as before
         HPX_TEST_EQ(t1.get_gid(), t2.get_gid());
 
