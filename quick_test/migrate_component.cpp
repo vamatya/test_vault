@@ -1,14 +1,23 @@
 //  Copyright (c) 2014 Hartmut Kaiser
+//  Copyright (c) 2015 Vinay C Amatya
 //
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#include <hpx/hpx_main.hpp>
+//#include <hpx/hpx_main.hpp>
+#include <hpx/hpx.hpp>
+#include <hpx/hpx_init.hpp>
 #include <hpx/include/components.hpp>
 #include <hpx/include/actions.hpp>
 #include <hpx/util/lightweight_test.hpp>
 
 #include <hpx/components/distributing_factory/distributing_factory.hpp>
+
+#include <iostream>
+
+using boost::program_options::variables_map;
+using boost::program_options::options_description;
+using boost::program_options::value;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -290,11 +299,11 @@ bool test_migrate_component(hpx::id_type source, hpx::id_type target)
     }
 }
 
-bool test_bulk_migrate(hpx::id_type source, hpx::id_type destination)
+bool test_bulk_migrate(hpx::id_type source, hpx::id_type destination, std::size_t num_comp)
 {
     log_client l1 = log_client::create(source);
     l1.init(0);
-    l1.populate_n(spawn_components<test_server>(hpx::find_here(), 100000));
+    l1.populate_n(spawn_components<test_server>(hpx::find_here(), num_comp));
     
     log_client l2 = log_client::create(destination);
     l2.init(1);
@@ -324,6 +333,20 @@ bool test_bulk_migrate(hpx::id_type source, hpx::id_type destination)
 
         l2.populate_n(ids_v);
         
+        std::vector<hpx::id_type>::iterator itr_u, itr_v;
+
+        itr_u = ids_u.begin();
+        itr_v = ids_v.begin();
+
+        HPX_TEST_EQ(ids_u.size(), ids_v.size());
+
+        for (std::size_t i = 0; i < num_comp; ++i)
+        {
+            HPX_TEST_EQ(*itr_u, *itr_v);
+            ++itr_u;
+            ++itr_v;
+        }
+
         //HPX_TEST_EQ(ids_u, ids_v);
 
         l1.de_populate();
@@ -339,20 +362,36 @@ bool test_bulk_migrate(hpx::id_type source, hpx::id_type destination)
     }
 }
 
-int main()
+int hpx_main(variables_map & vm)
 {
-    std::vector<hpx::id_type> localities = hpx::find_remote_localities();
-
-    std::vector<hpx::id_type>::iterator itrb = localities.begin();
-
-    BOOST_FOREACH(hpx::id_type const& id, localities)
     {
-        HPX_TEST(test_migrate_component(hpx::find_here(), id));
-        HPX_TEST(test_migrate_component(id, hpx::find_here()));
-        HPX_TEST(test_bulk_migrate(hpx::find_here(), id));
+        std::size_t num_comp = vm["num"].as<std::size_t>();
+        std::vector<hpx::id_type> localities = hpx::find_remote_localities();
 
+        std::vector<hpx::id_type>::iterator itrb = localities.begin();
+
+        BOOST_FOREACH(hpx::id_type const& id, localities)
+        {
+            HPX_TEST(test_migrate_component(hpx::find_here(), id));
+            HPX_TEST(test_migrate_component(id, hpx::find_here()));
+            HPX_TEST(test_bulk_migrate(hpx::find_here(), id, num_comp));
+
+        }
+        //std::vector<hpx::id_type> migrated_comps = mv_comps(this_comps, *itrb);
+
+        //return hpx::util::report_errors();
     }
-    //std::vector<hpx::id_type> migrated_comps = mv_comps(this_comps, *itrb);
 
-    return hpx::util::report_errors();
+    return hpx::finalize();
+}
+
+int main(int argc, char* argv[])
+{
+    options_description cmdline("Usage: " HPX_APPLICATION_STRING " [options]");
+
+    cmdline.add_options()
+        ("num", value<std::size_t>()->default_value(1000), "Num components to be bulk migrated.")
+        ;
+
+    return hpx::init(cmdline, argc, argv);
 }
