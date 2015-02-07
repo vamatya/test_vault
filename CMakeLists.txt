@@ -51,5 +51,13 @@ link_directories(${HPX_LIBRARY_DIR})
 ################################################################################
 # just recurse into the benchmark subdirectory and execute the scripts there
 add_hpx_pseudo_target(test_vault)
-add_subdirectory(quick_test)
 
+set(subdirs
+	quick_test
+	)
+
+foreach(subdir ${subdirs})
+	add_hpx_pseudo_target(test_vault.${subdir})
+	add_subdirectory(${subdir})
+	add_hpx_pseudo_dependencies(test_vault test_vault.${subdir})
+endforeach()
