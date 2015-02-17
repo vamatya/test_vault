@@ -52,4 +52,5 @@ link_directories(${HPX_LIBRARY_DIR})
 # just recurse into the benchmark subdirectory and execute the scripts there
 add_hpx_pseudo_target(test_vault)
 add_subdirectory(quick_test)
+add_subdirectory(comp_dep)
 
