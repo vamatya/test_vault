@@ -7,6 +7,7 @@
 
 
 set(tests
+    tuple_future
     migrate_component
    )
 
