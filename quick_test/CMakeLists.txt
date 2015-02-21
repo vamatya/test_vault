@@ -15,12 +15,15 @@ set(tests
 #   LOCALITIES 2
 #    THREADS_PER_LOCALITY 2)
 
-set(migrate_component_PARAMETERS
-    LOCALITIES 2
-    THREADS_PER_LOCALITY 2)
+#set(migrate_component_PARAMETERS
+#    LOCALITIES 2
+#    THREADS_PER_LOCALITY 2)
 
 #set(inheritance_2_classes_abstract_FLAGS
 #    DEPENDENCIES iostreams_component)
+
+
+#add_hpx_pseudo_target(test_vault.quick_test)
 
 foreach(test ${tests})
   set(sources
@@ -31,22 +34,26 @@ foreach(test ${tests})
   # add example executable
   add_hpx_executable(${test}_test
                      SOURCES ${sources}
-                     ${${test}_FLAGS}
-                     EXCLUDE_FROM_ALL
-                     HPX_PREFIX ${HPX_BUILD_PREFIX}
-                     FOLDER "Tests/Unit/Components")
+	   				 ${${test}_FLAGS}
+                     FOLDER "Test_vault/Quick_test")
 
-  add_hpx_unit_test("components" ${test} ${${test}_PARAMETERS})
+    
+       #HPX_PREFIX ${HPX_BUILD_PREFIX}
+       #EXCLUDE_FROM_ALL
+	   #${${test}_FLAGS}
+
+  #add_hpx_unit_test("components" ${test} ${${test}_PARAMETERS})
 
   # add a custom target for this example
-  add_hpx_pseudo_target(tests.unit.components.${test})
+  add_hpx_pseudo_target(test_vault.quick_test.${test})
+
 
   # make pseudo-targets depend on master pseudo-target
-  add_hpx_pseudo_dependencies(tests.unit.components
-                              tests.unit.components.${test})
+  add_hpx_pseudo_dependencies(test_vault.quick_test
+                              test_vault.quick_test.${test})
 
   # add dependencies to pseudo-target
-  add_hpx_pseudo_dependencies(tests.unit.components.${test}
+  add_hpx_pseudo_dependencies(test_vault.quick_test.${test}
                               ${test}_test_exe)
 
 endforeach()
