@@ -7,6 +7,7 @@
 //#include <hpx/hpx_main.hpp>
 #include <hpx/hpx.hpp>
 #include <hpx/hpx_init.hpp>
+#include <hpx/hpx_fwd.hpp>
 #include <hpx/include/components.hpp>
 #include <hpx/include/actions.hpp>
 #include <hpx/util/lightweight_test.hpp>
@@ -191,6 +192,27 @@ struct agas_server_m
     // 
 };
 
+struct test_objects
+{
+    test_objects()
+    {}
+    ~test_objects()
+    {}
+
+    hpx::id_type this_one;
+    hpx::id_type that_one;
+    bool test_pass;
+
+    friend class hpx::serialization::access;
+    template <typename Archive>
+    void serialize(Archive & ar, const unsigned int version)
+    {
+        ar & this_one;
+        ar & that_one;
+        ar & test_pass;
+    }
+};
+
 struct test_server
   : hpx::components::migration_support<
         hpx::components::simple_component_base<test_server>
@@ -224,11 +246,17 @@ struct test_server
 
     HPX_DEFINE_COMPONENT_ACTION(test_server, call, call_action);
 
-    friend class hpx::serialization::access;
-    template <typename Archive>
-    void serialize(Archive&ar, unsigned version) {}
-
 private:
+    std::vector<hpx::id_type> ids_temp_;
+    test_objects t_obj_;
+
+    friend class hpx::serialization::access;
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version)
+    {
+        ar & ids_temp_;
+        ar & t_obj_;
+    }
     ;
 };
 
