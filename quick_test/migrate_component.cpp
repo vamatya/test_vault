@@ -4,7 +4,6 @@
 //  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-//#include <hpx/hpx_main.hpp>
 #include <hpx/hpx.hpp>
 #include <hpx/hpx_init.hpp>
 #include <hpx/hpx_fwd.hpp>
@@ -21,13 +20,90 @@ using boost::program_options::options_description;
 using boost::program_options::value;
 
 ///////////////////////////////////////////////////////////////////////////////
+// namespace hpx {
+//     namespace components{
+//         template < typename Process> //typename Wrapper, typename CtorPolicy, typename DtorPolicy >
+//         class process_base
+//             : public managed_component_tag, boost::noncopyable
+//         {
+// 
+//                // Process Base Class
+//         };
+// 
+//     }
+// }
+
+// 
+// Abstract Class for different localities(device)
+// template <typename T>
+// struct abstract_locality 
+// {
+//     //
+//     virtual hpx::id_type get_locality_id() = 0;
+//     
+//     //
+// };
+
+// template <typename P>
+// struct abstract_policy
+// {
+//     virtual ~abstract_policy() = 0;
+// };
+// 
+// 
+// struct locality_base
+//     : abstract_locality < locality_base >
+// {
+//     hpx::id_type get_locality_id()
+//     {
+//         hpx::id_type id;
+//         return id;
+//     }
+// private:
+//     // data related to locality
+// };
+// 
+// struct policy_base
+//     : abstract_policy < policy_base >
+// {
+// 
+// };
+
+
+
+// template <typename Locality, typename Policy>
+// struct agas_client
+//     : hpx::components::process_base<agas_client<Locality, Policy> >
+// {
+// 
+//     //
+//     // Client AGAS attributes and functions
+// };
+
+// template <typename Locality>
+// struct agas_server  //Factory
+//     : hpx::components::process_base < agas_server<Locality> >
+// {
+//     //
+//     // Central Coordinating Server
+// private:
+//     typename std::vector<Locality> localities_;
+// 
+// };
+// 
+// 
+// template <typename T>
+// struct agas_server_m
+//     : hpx::components::process_base < agas_server_m<T> >
+// {
+//     // 
+// };
+
 
 template <typename Component>
 std::vector<hpx::id_type>
 spawn_components(hpx::id_type host, std::size_t num)
 {
-    //typedef hpx::util::remote_locality_result value_type;
-    //typedef std::pair<std::size_t, std::vector<value_type> > result_type;
     typedef std::pair<std::size_t, std::vector<hpx::id_type> > result_type;
 
     result_type res;
@@ -37,160 +113,19 @@ spawn_components(hpx::id_type host, std::size_t num)
 //     hpx::components::component_type c_type =
 //         hpx::components::get_component_type<Component>();
 
-//     typedef
-//         hpx::components::server::runtime_support::bulk_create_components_action
-//         action_type;
     typedef hpx::future<std::vector<hpx::naming::gid_type> > future_type;
 
-//     future_type f;
-//     {
-//         hpx::lcos::packaged_action < action_type
-//             , std::vector<hpx::naming::gid_type> > p;
-//         p.apply(hpx::launch::async, host, c_type, num);
-//         f = p.get_future();
-//     }
     hpx::future<id_vector_type> fut = hpx::new_<Component[]>(host, num);
 
     res.first = num;
-//     res.second.push_back(
-//         value_type(host.get_gid(), c_type));
-//     res.second.back().gids_ = boost::move(f.get());
-
     res.second = fut.get();
 
     id_vector_type comps;
 
     comps.reserve(num);
 
-//     std::vector<hpx::util::locality_result> res2;
-//     BOOST_FOREACH(hpx::util::remote_locality_result const& r1, res.second)
-//     {
-//         res2.push_back(r1);
-//     }
-// 
-//     BOOST_FOREACH(hpx::id_type id, hpx::util::locality_results(res2))
-//     {
-//         comps.push_back(id);
-//     }
-
     return res.second;//comps;
 }
-
-// template <typename 
-// std::vector<hpx::id_type>
-// mv_comps(std::vector<hpx::id_type> comps, hpx::id_type target)
-// {
-//     std::vector<hpx::id_type> moved_components;
-//     BOOST_FOREACH(hpx::id_type id, comps)
-//     {
-//         test_client tx(hpx::components::migrate<test_server>(
-//             id, target));
-//         moved_components.push_back(tx.get_gid());
-//     }
-//     return moved_components;
-// }
-
-// struct agas_server
-//     : hpx::components::migration_support <
-//     hpx::processes::simple_process_base < agas_server >
-// {
-// 
-// 
-// };
-// 
-// struct agas_server_factory
-//     : hpx::components::managed_component_base < agas_server_factory, process_base >
-// {
-// 
-// 
-// };
-// 
-// 
-// struct process_base
-// {
-// public:
-//     explicit process_base
-// };
-
-
-namespace hpx {
-    namespace components{
-        template < typename Process> //typename Wrapper, typename CtorPolicy, typename DtorPolicy >
-        class process_base
-            : public managed_component_tag, boost::noncopyable
-        {
-
-               // Process Base Class
-        };
-
-    }
-}
-
-
-// Abstract Class for different localities(device)
-template <typename T>
-struct abstract_locality 
-{
-    //
-    virtual hpx::id_type get_locality_id() = 0;
-    
-    //
-};
-
-template <typename P>
-struct abstract_policy
-{
-    virtual ~abstract_policy() = 0;
-};
-
-
-struct locality_base
-    : abstract_locality < locality_base >
-{
-    hpx::id_type get_locality_id()
-    {
-        hpx::id_type id;
-        return id;
-    }
-private:
-    // data related to locality
-};
-
-struct policy_base
-    : abstract_policy < policy_base >
-{
-
-};
-
-
-
-template <typename Locality, typename Policy>
-struct agas_client
-    : hpx::components::process_base<agas_client<Locality, Policy> >
-{
-
-    //
-    // Client AGAS attributes and functions
-};
-
-template <typename Locality>
-struct agas_server  //Factory
-    : hpx::components::process_base < agas_server<Locality> >
-{
-    //
-    // Central Coordinating Server
-private:
-    typename std::vector<Locality> localities_;
-
-};
-
-
-template <typename T>
-struct agas_server_m
-    : hpx::components::process_base < agas_server_m<T> >
-{
-    // 
-};
 
 struct test_objects
 {
@@ -348,17 +283,17 @@ HPX_REGISTER_ACTION_DECLARATION(get_components_action);
 HPX_REGISTER_ACTION(get_components_action);
 
 
-struct test_client
-  : hpx::components::client_base<test_client, test_server>
-{
-    typedef hpx::components::client_base<test_client, test_server>
-        base_type;
-
-    test_client() {}
-    test_client(hpx::shared_future<hpx::id_type> const& id) : base_type(id) {}
-
-    hpx::id_type call() const { return call_action()(this->get_gid()); }
-};
+// struct test_client
+//   : hpx::components::client_base<test_client, test_server>
+// {
+//     typedef hpx::components::client_base<test_client, test_server>
+//         base_type;
+// 
+//     test_client() {}
+//     test_client(hpx::shared_future<hpx::id_type> const& id) : base_type(id) {}
+// 
+//     hpx::id_type call() const { return call_action()(this->get_gid()); }
+// };
 
 struct log_client
     : hpx::components::client_base < log_client, log_server >
@@ -405,35 +340,35 @@ private:
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-bool test_migrate_component(hpx::id_type source, hpx::id_type target)
-{
-    hpx::id_type u1, u2;
-    // create component on given locality
-    test_client t1 = test_client::create(source);
-    HPX_TEST_NEQ(hpx::naming::invalid_id, t1.get_gid());
-
-    // the new object should live on the source locality
-    HPX_TEST_EQ(t1.call(), source);
-    u1 = t1.get_gid();
-    try {
-        // migrate of t1 to the target
-        
-        test_client t2(hpx::components::migrate<test_server>(
-            t1.get_gid(), target));
-        HPX_TEST_NEQ(hpx::naming::invalid_id, t2.get_gid());
-        u2 = t2.get_gid();
-        // the migrated object should have the same id as before
-        HPX_TEST_EQ(t1.get_gid(), t2.get_gid());
-
-        // the migrated object should life on the target now
-        HPX_TEST_EQ(t2.call(), target);
-
-        return true;
-    }
-    catch (hpx::exception const&) {
-        return false;
-    }
-}
+// bool test_migrate_component(hpx::id_type source, hpx::id_type target)
+// {
+//     hpx::id_type u1, u2;
+//     // create component on given locality
+//     test_client t1 = test_client::create(source);
+//     HPX_TEST_NEQ(hpx::naming::invalid_id, t1.get_gid());
+// 
+//     // the new object should live on the source locality
+//     HPX_TEST_EQ(t1.call(), source);
+//     u1 = t1.get_gid();
+//     try {
+//         // migrate of t1 to the target
+//         
+//         test_client t2(hpx::components::migrate<test_server>(
+//             t1.get_gid(), target));
+//         HPX_TEST_NEQ(hpx::naming::invalid_id, t2.get_gid());
+//         u2 = t2.get_gid();
+//         // the migrated object should have the same id as before
+//         HPX_TEST_EQ(t1.get_gid(), t2.get_gid());
+// 
+//         // the migrated object should life on the target now
+//         HPX_TEST_EQ(t2.call(), target);
+// 
+//         return true;
+//     }
+//     catch (hpx::exception const&) {
+//         return false;
+//     }
+// }
 
 bool test_bulk_migrate(hpx::id_type source, hpx::id_type destination, std::size_t num_comp)
 {
@@ -455,7 +390,6 @@ bool test_bulk_migrate(hpx::id_type source, hpx::id_type destination, std::size_
         l2.print_stat();
 
         for (hpx::id_type id : ids_u)
-        //BOOST_FOREACH(hpx::id_type id, ids_u)
         {
             vec_futs.push_back(hpx::components::migrate<test_server>(
                 id, destination));
@@ -464,7 +398,6 @@ bool test_bulk_migrate(hpx::id_type source, hpx::id_type destination, std::size_
         hpx::wait_all(vec_futs);
 
         for (hpx::future<hpx::id_type>& fut: vec_futs)
-        //BOOST_FOREACH(hpx::future<hpx::id_type>& fut, vec_futs)
         {
             ids_v.push_back(fut.get());
         }
@@ -509,17 +442,13 @@ int hpx_main(variables_map & vm)
         std::vector<hpx::id_type>::iterator itrb = localities.begin();
 
         for (hpx::id_type const& id : localities)
-        //BOOST_FOREACH(hpx::id_type const& id, localities)
         {
-            HPX_TEST(test_migrate_component(hpx::find_here(), id));
-            HPX_TEST(test_migrate_component(id, hpx::find_here()));
+            //HPX_TEST(test_migrate_component(hpx::find_here(), id));
+            //HPX_TEST(test_migrate_component(id, hpx::find_here()));
             HPX_TEST(test_bulk_migrate(hpx::find_here(), id, num_comp));
         }
-        //std::vector<hpx::id_type> migrated_comps = mv_comps(this_comps, *itrb);
-
         //return hpx::util::report_errors();
     }
-
     return hpx::finalize();
 }
 

@@ -57,6 +57,7 @@ add_hpx_pseudo_target(test_vault)
 set(subdirs
     quick_test
     comp_dep
+    unit_test
    )
 
 foreach(subdir ${subdirs})
