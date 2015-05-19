@@ -130,6 +130,7 @@ spawn_components(hpx::id_type host, std::size_t num)
 struct test_objects
 {
     test_objects()
+        : test_pass(false)
     {}
     ~test_objects()
     {}
